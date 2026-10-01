@@ -162,12 +162,17 @@ function Week({ m, t, isNow, data, me, todayKey, ...rest }) {
   if (tm !== tt && !nights[km] && !nights[kt]) warns.push("Tierra solo está apuntado un día de esta semana.");
   if ((tm || tt) && tPrev) warns.push("Tierra también va la semana anterior (normalmente va una sí y otra no).");
   const past = kt < todayKey;
+  const range = m.getMonth() === t.getMonth()
+    ? `${m.getDate()}–${t.getDate()} ${MON[t.getMonth()]}`
+    : `${m.getDate()} ${MON[m.getMonth()]} – ${t.getDate()} ${MON[t.getMonth()]}`;
+  const weekLabel = isNow ? "Esta semana" : `Semana ${isoWeek(m)}`;
   return (
     <section className={`week${past ? " past" : ""}${isNow ? " now" : ""}`}>
       <div className="whead">
-        <h2>{isNow ? "Esta semana" : `Semana ${isoWeek(m)}`}</h2>
-        <span className={`wtag${tm || tt ? " tierra" : ""}`}>
-          {tm || tt ? "Semana de Tierra" : `${m.getDate()}–${t.getDate()} ${MON[t.getMonth()]}`}
+        <h2>{range}</h2>
+        <span className="wtag">
+          {weekLabel}
+          {(tm || tt) && <span className="tierra"> · Semana de Tierra</span>}
         </span>
       </div>
       {warns.length > 0 && <div className="warns">{warns.map((x) => <p key={x}>{x}</p>)}</div>}
