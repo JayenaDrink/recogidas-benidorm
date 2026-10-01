@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  DOW, MON, NAME, PARENTS, addDays, coverage, fromYmd, indexRows, isoWeek, mondayOf, ymd,
+  DOW, MON, NAME, PARENTS, addDays, coverage, indexRows, isoWeek, mondayOf, ymd,
 } from "@/lib/calendar";
 
 const REFRESH_MS = 20000;
@@ -65,12 +65,7 @@ export default function Calendar() {
 
   function toggle(date) {
     const mine = !!data.signups[date]?.[me];
-    let dates = [date];
-    if (me === "tierra") {
-      const m = mondayOf(fromYmd(date));
-      dates = [ymd(m), ymd(addDays(m, 1))].filter((k) => k >= todayKey && !data.nights[k]);
-    }
-    post("/api/signup", { parent: me, dates, going: !mine }, dates);
+    post("/api/signup", { parent: me, dates: [date], going: !mine }, [date]);
   }
 
   function switchCars(date) {
@@ -159,7 +154,7 @@ export default function Calendar() {
       <details className="rules">
         <summary>Cómo se cuenta una noche cubierta</summary>
         <ul>
-          <li>Tierra lleva coche grande: si va él, la noche está cubierta. Suele ir lunes y martes de la misma semana, una semana sí y otra no.</li>
+          <li>Tierra lleva coche grande: si va él, esa noche está cubierta.</li>
           <li>Si no va Tierra hacen falta dos coches: Miguel con su esposa (2 coches) o dos padres con un coche cada uno.</li>
           <li>"Sin recogida" marca una noche sin traslado (festivo, sin clase…).</li>
         </ul>
@@ -169,13 +164,7 @@ export default function Calendar() {
 }
 
 function Week({ m, t, isNow, data, me, todayKey, ...rest }) {
-  const km = ymd(m), kt = ymd(t);
-  const { signups, nights } = data;
-  const tm = !!signups[km]?.tierra, tt = !!signups[kt]?.tierra;
-  const tPrev = !!(signups[ymd(addDays(m, -7))]?.tierra || signups[ymd(addDays(m, -6))]?.tierra);
-  const warns = [];
-  if (tm !== tt && !nights[km] && !nights[kt]) warns.push("Tierra solo está apuntado un día de esta semana.");
-  if ((tm || tt) && tPrev) warns.push("Tierra también va la semana anterior (normalmente va una sí y otra no).");
+  const kt = ymd(t);
   const past = kt < todayKey;
   const range = m.getMonth() === t.getMonth()
     ? `${m.getDate()}–${t.getDate()} ${MON[t.getMonth()]}`
@@ -185,12 +174,8 @@ function Week({ m, t, isNow, data, me, todayKey, ...rest }) {
     <section className={`week${past ? " past" : ""}${isNow ? " now" : ""}`}>
       <div className="whead">
         <h2>{range}</h2>
-        <span className="wtag">
-          {weekLabel}
-          {(tm || tt) && <span className="tierra"> · Semana de Tierra</span>}
-        </span>
+        <span className="wtag">{weekLabel}</span>
       </div>
-      {warns.length > 0 && <div className="warns">{warns.map((x) => <p key={x}>{x}</p>)}</div>}
       <Night d={m} {...{ data, me, todayKey, ...rest }} />
       <Night d={t} {...{ data, me, todayKey, ...rest }} />
     </section>
@@ -225,7 +210,7 @@ function Night({ d, data, me, todayKey, busy, toggle, switchCars, toggleOff }) {
       <div className="acts">
         {can && cov.k !== "off" && (
           <button className={`btn${mine ? " ghost" : ""}`} type="button" disabled={isBusy} onClick={() => toggle(k)}>
-            {mine ? "Ya no voy" : me === "tierra" ? "Voy esta semana" : "Voy yo"}
+            {mine ? "Ya no voy" : "Voy yo"}
           </button>
         )}
         {can && mine && me === "miguel" && (
