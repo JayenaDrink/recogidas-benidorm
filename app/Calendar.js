@@ -15,7 +15,13 @@ export default function Calendar() {
 
   const today = useMemo(() => new Date(), []);
   const todayKey = ymd(today);
-  const startMon = useMemo(() => mondayOf(today), [today]);
+  // The list starts at the first week whose Tuesday hasn't passed yet: from Wednesday on, the current week is gone.
+  const thisMon = useMemo(() => mondayOf(today), [today]);
+  const startMon = useMemo(
+    () => (ymd(addDays(thisMon, 1)) < ymd(today) ? addDays(thisMon, 7) : thisMon),
+    [thisMon, today]
+  );
+  const firstLabel = startMon.getTime() === thisMon.getTime() ? "Esta semana" : "Próxima semana";
 
   useEffect(() => {
     try { setMe(localStorage.getItem("rb_me")); } catch {}
@@ -140,7 +146,7 @@ export default function Calendar() {
           Array.from({ length: weeks }, (_, w) => {
             const m = addDays(startMon, 7 * w), t = addDays(m, 1);
             return (
-              <Week key={ymd(m)} m={m} t={t} isNow={w === 0} {...{ data, me, todayKey, busy, toggle, switchCars, toggleOff }} />
+              <Week key={ymd(m)} m={m} t={t} isNow={w === 0} firstLabel={firstLabel} {...{ data, me, todayKey, busy, toggle, switchCars, toggleOff }} />
             );
           })
         )}
@@ -163,13 +169,13 @@ export default function Calendar() {
   );
 }
 
-function Week({ m, t, isNow, data, me, todayKey, ...rest }) {
+function Week({ m, t, isNow, firstLabel, data, me, todayKey, ...rest }) {
   const kt = ymd(t);
   const past = kt < todayKey;
   const range = m.getMonth() === t.getMonth()
     ? `${m.getDate()}–${t.getDate()} ${MON[t.getMonth()]}`
     : `${m.getDate()} ${MON[m.getMonth()]} – ${t.getDate()} ${MON[t.getMonth()]}`;
-  const weekLabel = isNow ? "Esta semana" : `Semana ${isoWeek(m)}`;
+  const weekLabel = isNow ? firstLabel : `Semana ${isoWeek(m)}`;
   return (
     <section className={`week${past ? " past" : ""}${isNow ? " now" : ""}`}>
       <div className="whead">
