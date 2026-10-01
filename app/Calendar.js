@@ -85,16 +85,25 @@ export default function Calendar() {
 
   const meInfo = PARENTS.find((p) => p.id === me);
 
-  // Summary: next 4 weeks
-  let uncovered = 0, next = null;
+  // Summary: the next pickup week (first Mon/Tue pair not yet past), plus the next uncovered night overall.
+  let uncovered = 0, next = null, nextWeekLabel = "";
   if (data) {
-    for (let w = 0; w < 4; w++) {
+    let w0 = 0;
+    while (ymd(addDays(startMon, 7 * w0 + 1)) < todayKey) w0++;
+    const nm = addDays(startMon, 7 * w0), nt = addDays(nm, 1);
+    nextWeekLabel = nm.getMonth() === nt.getMonth()
+      ? `${nm.getDate()}–${nt.getDate()} ${MON[nt.getMonth()]}`
+      : `${nm.getDate()} ${MON[nm.getMonth()]} – ${nt.getDate()} ${MON[nt.getMonth()]}`;
+    for (let w = w0; w < w0 + weeks; w++) {
       const m = addDays(startMon, 7 * w);
       for (const d of [m, addDays(m, 1)]) {
         const k = ymd(d);
         if (k < todayKey) continue;
         const c = coverage(k, data.signups, data.nights).k;
-        if (c === "partial" || c === "empty") { uncovered++; next ||= d; }
+        if (c === "partial" || c === "empty") {
+          if (w === w0) uncovered++;
+          next ||= d;
+        }
       }
     }
   }
@@ -116,10 +125,10 @@ export default function Calendar() {
       {error && <div className="banner err">{error}</div>}
 
       <div className="summary">
-        <div className="stat"><b>{data ? uncovered : "–"}</b><span>noches sin cubrir en las próximas 4 semanas</span></div>
+        <div className="stat"><b>{data ? uncovered : "–"}</b><span>{data ? `noches sin cubrir la próxima semana (${nextWeekLabel})` : "noches sin cubrir la próxima semana"}</span></div>
         <div className="stat">
           <b>{!data ? "–" : next ? `${DOW[next.getDay()]} ${next.getDate()} ${MON[next.getMonth()]}` : "Todo cubierto"}</b>
-          <span>{!data || next ? "próxima noche pendiente" : "en las próximas 4 semanas"}</span>
+          <span>{!data || next ? "próxima noche pendiente" : "en las semanas que se ven"}</span>
         </div>
       </div>
 
