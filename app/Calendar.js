@@ -101,7 +101,7 @@ export default function Calendar() {
         if (k < todayKey) continue;
         const c = coverage(k, data.signups, data.nights).k;
         if (c === "partial" || c === "empty") {
-          if (w === w0) uncovered++;
+          if (w === w0) uncovered += c === "partial" ? 1 : 2;
           next ||= d;
         }
       }
@@ -125,7 +125,7 @@ export default function Calendar() {
       {error && <div className="banner err">{error}</div>}
 
       <div className="summary">
-        <div className="stat"><b>{data ? uncovered : "–"}</b><span>{data ? `noches sin cubrir la próxima semana (${nextWeekLabel})` : "noches sin cubrir la próxima semana"}</span></div>
+        <div className="stat"><b>{data ? uncovered : "–"}</b><span>{`${uncovered === 1 ? "coche falta" : "coches faltan"} la próxima semana${data ? ` (${nextWeekLabel})` : ""}`}</span></div>
         <div className="stat">
           <b>{!data ? "–" : next ? `${DOW[next.getDay()]} ${next.getDate()} ${MON[next.getMonth()]}` : "Todo cubierto"}</b>
           <span>{!data || next ? "próxima noche pendiente" : "en las semanas que se ven"}</span>
