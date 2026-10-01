@@ -86,7 +86,7 @@ export default function Calendar() {
   const meInfo = PARENTS.find((p) => p.id === me);
 
   // Summary: the next pickup week (first Mon/Tue pair not yet past), plus the next uncovered night overall.
-  let uncovered = 0, next = null, nextWeekLabel = "";
+  let uncovered = 0, next = null, nextWeekLabel = "", waText = "";
   if (data) {
     let w0 = 0;
     while (ymd(addDays(startMon, 7 * w0 + 1)) < todayKey) w0++;
@@ -106,6 +106,7 @@ export default function Calendar() {
         }
       }
     }
+    waText = weekMessage(nm, nt, nextWeekLabel, data);
   }
 
   return (
@@ -131,6 +132,11 @@ export default function Calendar() {
           <span>{!data || next ? "próxima noche pendiente" : "en las semanas que se ven"}</span>
         </div>
       </div>
+      {data && (
+        <a className="btn wa" href={`https://wa.me/?text=${encodeURIComponent(waText)}`} target="_blank" rel="noopener noreferrer">
+          Enviar resumen al grupo de WhatsApp
+        </a>
+      )}
 
       <div className="weeks">
         {!data ? (
@@ -235,4 +241,27 @@ function Night({ d, data, me, todayKey, busy, toggle, switchCars, toggleOff }) {
       </div>
     </div>
   );
+}
+
+const APP_URL = "https://recogidas-benidorm.vercel.app";
+
+// Plain-text weekly summary for the WhatsApp group.
+function weekMessage(m, t, label, data) {
+  const lines = [`🚗 Recogidas Benidorm · ${label}`, ""];
+  for (const d of [m, t]) {
+    const k = ymd(d);
+    const day = `${d.getDay() === 1 ? "Lunes" : "Martes"} ${d.getDate()}`;
+    const cov = coverage(k, data.signups, data.nights);
+    const g = data.signups[k] || {};
+    const who = Object.keys(g)
+      .sort((a, b) => g[a].at - g[b].at)
+      .map((id) => (id === "miguel" && g[id].cars > 1 ? "Miguel (2 coches)" : NAME[id] || id))
+      .join(", ");
+    if (cov.k === "off") lines.push(`➖ ${day}: no hay recogida`);
+    else if (cov.k === "ok") lines.push(`✅ ${day}: ${who}`);
+    else if (cov.k === "partial") lines.push(`⚠️ ${day}: ${who} · falta 1 coche`);
+    else lines.push(`❌ ${day}: nadie apuntado · faltan 2 coches`);
+  }
+  lines.push("", `Apúntate aquí: ${APP_URL}`);
+  return lines.join("\n");
 }
