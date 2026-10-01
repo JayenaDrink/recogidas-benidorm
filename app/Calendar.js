@@ -208,11 +208,12 @@ function Night({ d, data, me, todayKey, busy, toggle, switchCars, toggleOff }) {
         )}
       </div>
       <div className="acts">
-        {can && cov.k !== "off" && (
+        {can && cov.k !== "off" && (mine || cov.k !== "ok") && (
           <button className={`btn${mine ? " ghost" : ""}`} type="button" disabled={isBusy} onClick={() => toggle(k)}>
             {mine ? "Ya no voy" : "Voy yo"}
           </button>
         )}
+        {can && !mine && cov.k === "ok" && <span className="full">Completa</span>}
         {can && mine && me === "miguel" && (
           <button className="link" type="button" disabled={isBusy} onClick={() => switchCars(k)}>
             {mine.cars > 1 ? "Ir con 1 coche" : "Ir con 2 coches"}

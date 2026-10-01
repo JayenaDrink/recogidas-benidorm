@@ -89,3 +89,4 @@ h1 { font-family:var(--display); font-weight:800; font-size:1.9rem; line-height:
 @media (prefers-reduced-motion:no-preference) { .btn, .chip { transition:background .15s, border-color .15s; } }
 .btn.wa { display:block; text-align:center; text-decoration:none; background:#1f8f4e; border-color:#1f8f4e; color:#ffffff; }
 @media (prefers-color-scheme: dark) { .btn.wa { background:#2ea862; border-color:#2ea862; color:#06210f; } }
+.full { font-size:.8rem; font-weight:700; color:var(--muted); padding:8px 4px; }

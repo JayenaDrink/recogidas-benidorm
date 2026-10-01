@@ -13,6 +13,8 @@ export async function POST(req) {
     const cars = parent === "miguel" ? (body.cars === 1 ? 1 : 2) : 1;
     const rows = dates.map((date) => ({ date, parent, cars }));
     const { error } = await db().from("signups").upsert(rows, { onConflict: "date,parent" });
+    if (error?.message?.includes("NIGHT_COVERED"))
+      return json({ error: "Esa noche ya está cubierta. Solo quien ya va puede quitarse para liberarla." }, 409);
     if (error) return json({ error: "No se pudo guardar." }, 500);
   } else {
     const { error } = await db().from("signups").delete().eq("parent", parent).in("date", dates);
