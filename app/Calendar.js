@@ -5,6 +5,8 @@ import {
 } from "@/lib/calendar";
 
 const REFRESH_MS = 20000;
+// WhatsApp summary button: hidden for now. Set to true to bring it back.
+const SHOW_WHATSAPP = false;
 
 export default function Calendar() {
   const [me, setMe] = useState(null);
@@ -133,7 +135,7 @@ export default function Calendar() {
           <span>{!data || next ? "próxima noche pendiente" : "en las semanas que se ven"}</span>
         </div>
       </div>
-      {data && (
+      {SHOW_WHATSAPP && data && (
         <a className="btn wa" href={`https://wa.me/?text=${encodeURIComponent(waText)}`} target="_blank" rel="noopener noreferrer">
           Enviar resumen al grupo de WhatsApp
         </a>
